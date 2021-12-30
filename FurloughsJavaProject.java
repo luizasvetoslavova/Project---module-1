@@ -1,5 +1,7 @@
 package com.company;
-
+import jdk.internal.access.JavaNetHttpCookieAccess;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.Scanner;
 
 public class FurloughsJavaProject {
@@ -59,84 +61,42 @@ public class FurloughsJavaProject {
         setFurloughEndDate();
     }
 
-    private static void setFurloughEndDate() {
-
-    }
-
     private static void setFurloughStartDate() {
-        System.out.print("Моля, въведете начална дата на вашата отпуска! \n" +
-                "Ден: ");
-        String startDay = scanner.nextLine();
-        System.out.print("Месец: ");
-        String startMonth = scanner.nextLine();
-        System.out.print("Година: ");
-        String startYear = scanner.nextLine();
+        System.out.println("Моля, въведете начало на вашата отпуска във формат ДД-ММ-ГГ: ");
+        String inputDate = scanner.nextLine();
 
-        checkIfInputIsNumerous(startDay, startMonth, startYear);
-        checkDateValidity(startDay, startMonth, startYear);
 
-        //TODO
+//        while () {
+//            printIllegalInputMessage();
+//        }
     }
 
-    private static void checkIfInputIsNumerous(String furloughStartDay, String furloughStartMonth, String furloughStartYear) {
-        while (!furloughStartDay.matches("[+-]?\\d*(\\.\\d+)?") ||
-                !furloughStartMonth.matches("[+-]?\\d*(\\.\\d+)?") ||
-                !furloughStartYear.matches("[+-]?\\d*(\\.\\d+)?")) {
-            printIllegalInputMessage();
-            insertDate(furloughStartDay, furloughStartMonth, furloughStartYear);
-        }
+    private static void setFurloughEndDate() {
+        System.out.println("Моля, въведете край на вашата отпуска във формат ДД-ММ-ГГ: ");
+
     }
 
-    private static void checkDateValidity(String startDay, String startMonth, String startYear) {
-        int day = Integer.parseInt(startDay);
-        int month = Integer.parseInt(startMonth);
-        int year = Integer.parseInt(startYear);
-
-        checkForInputOutOfLimits(day, month);
-        checkShortMonths(day, month);
-        checkFebruary(day, month, year);
+    public static boolean isEndDateInLimit(int day, int month, int year) {
+        LocalDate currentdate = LocalDate.now();
+        return !(day < currentdate.getDayOfMonth() ||
+                month < currentdate.getMonthValue() || year != currentdate.getYear());
     }
 
-    private static void checkForInputOutOfLimits(int day, int month) {
-        if (day < 1 || day > 31 || month < 1 || month > 12) {
-            printIllegalInputMessage();
-        }
-    }
-
-    private static void checkFebruary(int day, int month, int year) {
-        if (day == 28 && month == 2 && year % 4 == 0) {
-            printIllegalInputMessage();
-
-        } else if (day == 29 && month == 2 && year % 4 != 0) {
-            printIllegalInputMessage();
-        }
-    }
-
-    private static void checkShortMonths(int day, int month) {
-        if (day == 31 && (month == 4 || month == 6 || month == 9 || month == 11 || month == 2)) {
-            printIllegalInputMessage();
-        }
+    private static boolean isStartDateInLimit(int day, int month, int year) {
+        LocalDate currentdate = LocalDate.now();
+        return !(day < currentdate.getDayOfMonth() ||
+                month < currentdate.getMonthValue() || year != currentdate.getYear());
     }
 
     public static void printIllegalInputMessage() {
         System.out.print("Невалиден вход! Опитайте отново: ");
     }
 
-    public static void insertDate(String startDay, String startMonth, String startYear) {
-        System.out.print("Ден: ");
-        startDay = scanner.nextLine();
-        System.out.print("Месец: ");
-        startMonth = scanner.nextLine();
-        System.out.print("Година: ");
-        startYear = scanner.nextLine();
-    }
-
     public static void setUserID() {
         System.out.print("Вашето ЕГН: ");
         String inputID = scanner.nextLine();
 
-        while (inputID.isBlank() || !inputID.matches("[+-]?\\d*(\\.\\d+)?")
-                || inputID.length() != 10) {
+        while (!isNumerous(inputID) || inputID.length() != 10) {
             printIllegalInputMessage();
             inputID = scanner.nextLine();
         }
@@ -156,19 +116,23 @@ public class FurloughsJavaProject {
 
     public static void setUserName() {
         System.out.print("Име: ");
-        String userFirstName = scanner.nextLine();
+        String firstName = scanner.nextLine();
         System.out.print("Фамилия: ");
-        String userLastName = scanner.nextLine();
+        String lastName = scanner.nextLine();
 
-        while (userFirstName.isBlank() || userLastName.isBlank() ||
-                Character.isLowerCase(userFirstName.charAt(0)) || Character.isLowerCase(userLastName.charAt(0)) ||
-                userFirstName.matches("[+-]?\\d*(\\.\\d+)?") || userLastName.matches("[+-]?\\d*(\\.\\d+)?")) {
-            System.out.println("Невалиден вход! \n" +
-                    "Име: ");
-            userFirstName = scanner.nextLine();
-            System.out.println("Фамилия: ");
-            userLastName = scanner.nextLine();
+        while (firstName.isBlank() || lastName.isBlank() ||
+                Character.isLowerCase(firstName.charAt(0)) || Character.isLowerCase(lastName.charAt(0)) ||
+                isNumerous(firstName) || isNumerous(lastName)) {
+            printIllegalInputMessage();
+            System.out.print("Име: ");
+            firstName = scanner.nextLine();
+            System.out.print("Фамилия: ");
+            lastName = scanner.nextLine();
         }
+    }
+
+    public static boolean isNumerous(String input) {
+        return input.matches("[+-]?\\d*(\\.\\d+)?");
     }
 
     private static void exitFurloughSystem() {
