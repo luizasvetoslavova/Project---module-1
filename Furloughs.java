@@ -5,13 +5,13 @@ import java.text.ParseException;
 import java.util.Arrays;
 import java.util.Date;
 import java.text.SimpleDateFormat;
+import java.util.Random;
 import java.util.Scanner;
 
 public class Furloughs {
 
     public static Scanner scanner = new Scanner(System.in);
-    public static String[][] furloughsTable = new String[1000][7];
-    public static int ct = 0;
+    public static String[][] furloughsTable = new String[8][1000];
 
     public static void main(String[] args) throws ParseException {
 
@@ -21,6 +21,8 @@ public class Furloughs {
         furloughsTable[3][0] = "Начало";
         furloughsTable[4][0] = "Край";
         furloughsTable[5][0] = "Тип";
+        furloughsTable[6][0] = "Статус";
+        furloughsTable[7][0] = "Уникален номер на заявката";
 
         setOptions();
         processUserChoice();
@@ -51,13 +53,10 @@ public class Furloughs {
         switch (userChoice) {
             case "1" -> stateAFurlough();
             case "2" -> printAllFurloughs();
-            case "3" -> printEmployeeFurloughs();
+            case "3" -> printSingleEmployeeFurloughs();
             case "4" -> changeFurloughStatus();
             case "5" -> exitSystem();
         }
-    }
-
-    private static void printEmployeeFurloughs() {
     }
 
     public static boolean isUserChoiceValid(String userChoice) {
@@ -75,6 +74,9 @@ public class Furloughs {
         setUserID();
         setFurloughPeriod();
         setFurloughType();
+        setDefaultStatus();
+        setUniqueFurloughNumber();
+        printSuccessfulSettingMessage();
         exitSystem();
     }
 
@@ -92,12 +94,12 @@ public class Furloughs {
             lastName = scanner.nextLine();
         }
 
-        fillTable(1, firstName.concat(" ").concat(lastName));
+        fillTable(0, firstName.concat(" ").concat(lastName));
     }
 
     public static void fillTable(int position, String result) {
         int counter = 0;
-        for (int index = 1; index < 6; index++) {
+        for (int index = 1; index < furloughsTable.length - 2; index++) {
             counter++;
             if (furloughsTable[position][index] == null) {
                 break;
@@ -129,7 +131,7 @@ public class Furloughs {
             }
         }
 
-        fillTable(2, userEmail);
+        fillTable(1, userEmail);
     }
 
     public static boolean isEmailValid(String email) {
@@ -145,7 +147,7 @@ public class Furloughs {
             userID = scanner.nextLine();
         }
 
-        fillTable(3, userID);
+        fillTable(2, userID);
     }
 
     public static boolean isNumeric(String input) {
@@ -161,7 +163,7 @@ public class Furloughs {
             start = scanner.nextLine();
         }
 
-        fillTable(4, start);
+        fillTable(3, start);
 
         System.out.println("Край на вашата отпуска във формат ДД-ММ-ГГГГ: ");
         String end = scanner.nextLine();
@@ -171,7 +173,7 @@ public class Furloughs {
             end = scanner.nextLine();
         }
 
-        fillTable(5, end);
+        fillTable(4, end);
 
         Date startDate = new SimpleDateFormat("dd-MM-yyyy").parse(start);
         Date endDate = new SimpleDateFormat("dd-MM-yyyy").parse(end);
@@ -200,7 +202,7 @@ public class Furloughs {
             furloughType = scanner.nextLine();
         }
 
-        fillTable(6, furloughType);
+        fillTable(5, furloughType);
     }
 
     public static void printSuccessfulSettingMessage() {
@@ -216,29 +218,142 @@ public class Furloughs {
                 furloughType.equalsIgnoreCase("неплатена");
     }
 
-    public static void printAllFurloughs() {
-        for (int row = 0; row < 6; row++) {
-            for (int column = 0; column < 7; column++) {
+    public static void setDefaultStatus() {
+        for (int index = 1; index < furloughsTable[6].length; index++) {
+            if (furloughsTable[0][index] == null) {
+                break;
+            }
+            furloughsTable[6][index] = "pending";
+        }
+    }
+
+    private static void setUniqueFurloughNumber() {
+        Random furloughNumber = new Random();
+        int random = furloughNumber.nextInt(10000000);
+        String number = Integer.toString(random);
+        fillTable(7, number);
+        //todo
+    }
+
+    public static void printAllFurloughs() throws ParseException {
+        System.out.println();
+        boolean loopBreaks = true;
+
+        for (int row = 0; row < furloughsTable.length - 1; row++) {
+            for (int column = 0; column < furloughsTable.length - 1; column++) {
                 if (furloughsTable[column][row] != null) {
-                    if(row == 0) {
-                        System.out.print(furloughsTable[column][row] + "\t \t \t \t \t  ");
-                    } else {
+                    System.out.print(furloughsTable[column][row] + "\t \t \t");
+                    loopBreaks = false;
+                } else {
+                    loopBreaks = true;
+                }
+            }
+            if (loopBreaks) {
+                break;
+            }
+            System.out.println();
+        }
+        System.out.println();
+        exitSystem();
+    }
+
+    private static void exitSystem() throws ParseException {
+        setOptions();
+        processUserChoice();
+    }
+
+    private static void printSingleEmployeeFurloughs() throws ParseException {
+        System.out.print("Име на служител: ");
+        String employeeName = scanner.nextLine();
+
+        System.out.println();
+        for (int heading = 0; heading < furloughsTable.length - 1; heading++) {
+            System.out.print(furloughsTable[heading][0] + " \t \t \t");
+        }
+
+        for (int row = 0; row < furloughsTable.length - 1; row++) {
+            if (furloughsTable[0][row] == null) {
+                break;
+            }
+            if (employeeName.equalsIgnoreCase(furloughsTable[0][row])) {
+                System.out.println();
+                for (int column = 0; column < furloughsTable.length - 1; column++) {
+                    if (furloughsTable[column][row] != null) {
                         System.out.print(furloughsTable[column][row] + "\t \t \t");
                     }
                 }
+            }
+        }
+        System.out.println();
+        exitSystem();
+    }
+
+    public static void changeFurloughStatus() throws ParseException {
+        printFurloughsTableIncludingNumber();
+
+        System.out.print("Номер на заявката: ");
+        String furloughNumber = scanner.nextLine();
+
+//        for (int index = 1; index < furloughsTable[7].length; index++) {
+//            if (furloughNumber.equals(furloughsTable[7][index])) {
+//                break;
+//            }
+//        }
+
+        System.out.print("""
+                Изберете статус (1-2)\s
+                1. Одобрена\s
+                2. Отхвърлена\s
+                Вашият избор:\s""");
+        String status = scanner.nextLine();
+
+        while (!status.equals("1") || status.equals("2")) {
+            printIllegalInputMessage();
+            status = scanner.nextLine();
+        }
+
+        if (status.equals("1")) {
+            status = "одобрена";
+        } else if (status.equals("2")) {
+            status = "отхвърлена";
+        }
+
+        int counter = 0;
+        for (int index = 1; index < furloughsTable[7].length; index++) {
+            counter++;
+            if (furloughNumber.equals(furloughsTable[7][index])) {
+                break;
+            }
+        }
+        System.out.println();
+        furloughsTable[6][counter] = status;
+        exitSystem();
+    }
+
+    private static void printFurloughsTableIncludingNumber() {
+        System.out.println();
+        boolean loopBreaks = true;
+
+        for (int row = 0; row < furloughsTable.length; row++) {
+            for (int column = 0; column < furloughsTable.length; column++) {
+                if (furloughsTable[column][row] != null) {
+                    System.out.print(furloughsTable[column][row] + "\t \t \t");
+                    loopBreaks = false;
+                } else {
+                    loopBreaks = true;
+                }
+            }
+            if (loopBreaks) {
+                break;
             }
             System.out.println();
         }
     }
 
-    private static void exitSystem() throws ParseException {
-        printSuccessfulSettingMessage();
-        setOptions();
-        processUserChoice();
-    }
-
-    public static void changeFurloughStatus() {
-    }
-
 }
+
+
+
+
+
 
