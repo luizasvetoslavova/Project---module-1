@@ -1,8 +1,6 @@
 package com.company;
 
-import javax.swing.text.LabelView;
 import java.text.ParseException;
-import java.util.Arrays;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.util.Random;
@@ -11,36 +9,42 @@ import java.util.Scanner;
 public class Furloughs {
 
     public static Scanner scanner = new Scanner(System.in);
-    public static String[][] furloughsTable = new String[8][1000];
+    public static String[][] furloughsData = new String[8][1000];
 
     public static void main(String[] args) throws ParseException {
-
-        furloughsTable[0][0] = "Имe";
-        furloughsTable[1][0] = "Имейл";
-        furloughsTable[2][0] = "ЕГН";
-        furloughsTable[3][0] = "Начало";
-        furloughsTable[4][0] = "Край";
-        furloughsTable[5][0] = "Тип";
-        furloughsTable[6][0] = "Статус";
-        furloughsTable[7][0] = "Уникален номер на заявката";
-
-        setOptions();
+        setTableHeadings();
+        printOptions();
         processUserChoice();
     }
 
-    public static void setOptions() {
-        System.out.print("""
-                                
-                Добре дошли в системата за отпуски!\s
-                Изберете една от следните опциии (1-5):\s
-                -------------------------------\s
-                1. Заявете отпуска\s
-                2. Вижте всички отпуски\s
-                3. Вижте отпуска за служител\s
-                4. Променете статус на отпуска\s
-                5. Изход\s
-                -------------------------------\s
-                Вашият избор:\s""");
+    private static void setTableHeadings() {
+        for (int rowIndex = 0; rowIndex <= 7; rowIndex++) {
+            switch (rowIndex) {
+                case 0 -> furloughsData[rowIndex][0] = "Име";
+                case 1 -> furloughsData[rowIndex][0] = "E-mail";
+                case 2 -> furloughsData[rowIndex][0] = "ЕГН";
+                case 3 -> furloughsData[rowIndex][0] = "Начало на отпуска";
+                case 4 -> furloughsData[rowIndex][0] = "Край на отпуска";
+                case 5 -> furloughsData[rowIndex][0] = "Тип";
+                case 6 -> furloughsData[rowIndex][0] = "Статус";
+                case 7 -> furloughsData[rowIndex][0] = "Номер на заявка";
+            }
+        }
+    }
+
+    public static void printOptions() {
+        printNewLine();
+        printNewLine();
+        System.out.print("Добре дошли в системата за отпуски!\n" +
+                "Изберете една от следните опциии (1-5):\n" +
+                "-------------------------------\n" +
+                "1. Заявете отпуска\n" +
+                "2. Вижте всички отпуски\n" +
+                "3. Вижте отпуска за служител\n" +
+                "4. Променете статус на отпуска\n" +
+                "5. Изход\n" +
+                "-------------------------------\n" +
+                "Избор: ");
     }
 
     public static void processUserChoice() throws ParseException {
@@ -51,12 +55,17 @@ public class Furloughs {
         }
 
         switch (userChoice) {
-            case "1" -> stateAFurlough();
+            case "1" -> setAFurlough();
             case "2" -> printAllFurloughs();
             case "3" -> printSingleEmployeeFurloughs();
             case "4" -> changeFurloughStatus();
             case "5" -> exitSystem();
         }
+    }
+
+    public static void exitSystem() throws ParseException {
+        printOptions();
+        processUserChoice();
     }
 
     public static boolean isUserChoiceValid(String userChoice) {
@@ -65,17 +74,17 @@ public class Furloughs {
     }
 
     public static void printIllegalInputMessage() {
-        System.out.println("Невалиден вход! Опитайте отново: ");
+        System.out.print("Невалиден вход! Опитайте отново: ");
     }
 
-    public static void stateAFurlough() throws ParseException {
+    public static void setAFurlough() throws ParseException {
         setUserName();
         setUserEmail();
         setUserID();
         setFurloughPeriod();
         setFurloughType();
         setDefaultStatus();
-        setUniqueFurloughNumber();
+        setFurloughNumber();
         printSuccessfulSettingMessage();
         exitSystem();
     }
@@ -83,52 +92,43 @@ public class Furloughs {
     public static void setUserName() {
         System.out.print("Име: ");
         String firstName = scanner.nextLine();
+        while (!isUserNameValid(firstName)) {
+            printIllegalInputMessage();
+            firstName = scanner.nextLine();
+        }
+
         System.out.print("Фамилия: ");
         String lastName = scanner.nextLine();
-
-        while (!isUserNameValid(firstName, lastName)) {
+        while (!isUserNameValid(lastName)) {
             printIllegalInputMessage();
-            System.out.print("Име: ");
-            firstName = scanner.nextLine();
-            System.out.print("Фамилия: ");
             lastName = scanner.nextLine();
         }
 
         fillTable(0, firstName.concat(" ").concat(lastName));
     }
 
-    public static void fillTable(int position, String result) {
-        int counter = 0;
-        for (int index = 1; index < furloughsTable.length - 2; index++) {
-            counter++;
-            if (furloughsTable[position][index] == null) {
+    public static boolean isUserNameValid(String userName) {
+        return !(userName.isBlank() || Character.isLowerCase(userName.charAt(0)) || isNumeric(userName));
+    }
+
+    public static void fillTable(int row, String data) {
+        int rowIndex = 0;
+        for (int index = 1; index < furloughsData.length - 2; index++) {
+            rowIndex++;
+            if (furloughsData[row][rowIndex] == null) {
                 break;
             }
         }
-        furloughsTable[position][counter] = result;
-    }
-
-    public static boolean isUserNameValid(String firstName, String lastName) {
-        return !(firstName.isBlank() || lastName.isBlank() ||
-                Character.isLowerCase(firstName.charAt(0)) || Character.isLowerCase(lastName.charAt(0)) ||
-                isNumeric(firstName) || isNumeric(lastName));
+        furloughsData[row][rowIndex] = data;
     }
 
     public static void setUserEmail() {
-        System.out.print("Вашият e-mail: ");
+        System.out.print("E-mail: ");
         String userEmail = scanner.nextLine();
 
         while (!isEmailValid(userEmail)) {
             printIllegalInputMessage();
             userEmail = scanner.nextLine();
-        }
-
-        int n = 0;
-        for (int i = 1; i < 6; i++) {
-            n++;
-            if (furloughsTable[0][i] == null) {
-                break;
-            }
         }
 
         fillTable(1, userEmail);
@@ -139,15 +139,19 @@ public class Furloughs {
     }
 
     public static void setUserID() {
-        System.out.print("Вашето ЕГН: ");
+        System.out.print("ЕГН: ");
         String userID = scanner.nextLine();
 
-        while (!isNumeric(userID) || userID.length() != 10) {
+        while (!isUserIDValid(userID)) {
             printIllegalInputMessage();
             userID = scanner.nextLine();
         }
 
         fillTable(2, userID);
+    }
+
+    public static boolean isUserIDValid(String userID) {
+        return !(!isNumeric(userID) || userID.length() != 10);
     }
 
     public static boolean isNumeric(String input) {
@@ -162,7 +166,6 @@ public class Furloughs {
             printIllegalInputMessage();
             start = scanner.nextLine();
         }
-
         fillTable(3, start);
 
         System.out.println("Край на вашата отпуска във формат ДД-ММ-ГГГГ: ");
@@ -173,8 +176,6 @@ public class Furloughs {
             end = scanner.nextLine();
         }
 
-        fillTable(4, end);
-
         Date startDate = new SimpleDateFormat("dd-MM-yyyy").parse(start);
         Date endDate = new SimpleDateFormat("dd-MM-yyyy").parse(end);
 
@@ -183,6 +184,7 @@ public class Furloughs {
             end = scanner.nextLine();
             endDate = new SimpleDateFormat("dd-MM-yyyy").parse(end);
         }
+        fillTable(4, end);
     }
 
     public static boolean areDatesInCorrectOrder(Date startDate, Date endDate) {
@@ -194,7 +196,12 @@ public class Furloughs {
     }
 
     public static void setFurloughType() {
-        System.out.print("Изберете тип отпуска (платена/неплатена): ");
+        System.out.print("""
+                Изберете тип отпуска (1-2)
+                1. Платена
+                2. Неплатена
+                Избор:""");
+
         String furloughType = scanner.nextLine();
 
         while (!isFurloughTypeValid(furloughType)) {
@@ -202,151 +209,208 @@ public class Furloughs {
             furloughType = scanner.nextLine();
         }
 
+        if (furloughType.equals("1")) {
+            furloughType = "платена";
+        } else {
+            furloughType = "неплатена";
+        }
+
         fillTable(5, furloughType);
+    }
+
+    public static boolean isFurloughTypeValid(String furloughType) {
+        return furloughType.equals("1") || furloughType.equals("2");
     }
 
     public static void printSuccessfulSettingMessage() {
         System.out.println("""
-                -------------------------------------------------\s
-                Вашата отпуска беше успешно въведена в системата.\s
-                -------------------------------------------------""");
+                ----------------------------------------------\s
+                Вашата отпуска e успешно въведена в системата.\s
+                ----------------------------------------------""");
 
-    }
-
-    public static boolean isFurloughTypeValid(String furloughType) {
-        return furloughType.equalsIgnoreCase("платена") ||
-                furloughType.equalsIgnoreCase("неплатена");
     }
 
     public static void setDefaultStatus() {
-        for (int index = 1; index < furloughsTable[6].length; index++) {
-            if (furloughsTable[0][index] == null) {
+        for (int index = 1; index < furloughsData[6].length; index++) {
+            if (isCellEmpty(0, index)) {
                 break;
             }
-            furloughsTable[6][index] = "pending";
+            furloughsData[6][index] = "в изчакване";
         }
     }
 
-    private static void setUniqueFurloughNumber() {
-        Random furloughNumber = new Random();
-        int random = furloughNumber.nextInt(10000000);
-        String number = Integer.toString(random);
+    public static boolean isCellEmpty(int firstIndex, int secondIndex) {
+        return furloughsData[firstIndex][secondIndex] == null;
+    }
+
+    private static void setFurloughNumber() {
+        Random random = new Random();
+        int furloughNumber = random.nextInt(1000000000);
+        String number = Integer.toString(furloughNumber);
         fillTable(7, number);
         //todo
     }
 
     public static void printAllFurloughs() throws ParseException {
-        System.out.println();
         boolean loopBreaks = true;
 
-        for (int row = 0; row < furloughsTable.length - 1; row++) {
-            for (int column = 0; column < furloughsTable.length - 1; column++) {
-                if (furloughsTable[column][row] != null) {
-                    System.out.print(furloughsTable[column][row] + "\t \t \t");
+        for (int rowIndex = 0; rowIndex < furloughsData.length - 1; rowIndex++) {
+            for (int columnIndex = 0; columnIndex < furloughsData.length - 1; columnIndex++) {
+                if (!isCellEmpty(columnIndex, rowIndex)) {
+                    System.out.print(furloughsData[columnIndex][rowIndex] + "\t \t \t");
                     loopBreaks = false;
                 } else {
                     loopBreaks = true;
                 }
             }
+            printNewLine();
             if (loopBreaks) {
                 break;
             }
-            System.out.println();
         }
-        System.out.println();
         exitSystem();
     }
 
-    private static void exitSystem() throws ParseException {
-        setOptions();
-        processUserChoice();
-    }
-
-    private static void printSingleEmployeeFurloughs() throws ParseException {
+    public static void printSingleEmployeeFurloughs() throws ParseException {
         System.out.print("Име на служител: ");
         String employeeName = scanner.nextLine();
 
-        System.out.println();
-        for (int heading = 0; heading < furloughsTable.length - 1; heading++) {
-            System.out.print(furloughsTable[heading][0] + " \t \t \t");
-        }
+        printNewLine();
+        printTableHeadings();
 
-        for (int row = 0; row < furloughsTable.length - 1; row++) {
-            if (furloughsTable[0][row] == null) {
+        for (int rowIndex = 0; rowIndex < furloughsData.length - 1; rowIndex++) {
+            if (isCellEmpty(0, rowIndex)) {
                 break;
-            }
-            if (employeeName.equalsIgnoreCase(furloughsTable[0][row])) {
-                System.out.println();
-                for (int column = 0; column < furloughsTable.length - 1; column++) {
-                    if (furloughsTable[column][row] != null) {
-                        System.out.print(furloughsTable[column][row] + "\t \t \t");
+            } else if (searchMatchesUserName(employeeName, rowIndex)) {
+                printNewLine();
+                for (int columnIndex = 0; columnIndex < furloughsData.length - 1; columnIndex++) {
+                    if (!isCellEmpty(columnIndex, rowIndex)) {
+                        System.out.print(furloughsData[columnIndex][rowIndex] + "\t \t \t");
                     }
                 }
             }
         }
-        System.out.println();
+
+        printNewLine();
         exitSystem();
     }
 
+    public static boolean searchMatchesUserName(String search, int rowIndex) {
+        return search.equalsIgnoreCase(furloughsData[0][rowIndex]);
+    }
+
+    private static void printTableHeadings() {
+        for (int heading = 0; heading < furloughsData.length - 1; heading++) {
+            System.out.print(furloughsData[heading][0] + " \t \t \t");
+        }
+    }
+
+    public static void printNewLine() {
+        System.out.println();
+    }
+
     public static void changeFurloughStatus() throws ParseException {
-        printFurloughsTableIncludingNumber();
+        printFurloughsTable();
+        printNewLine();
 
-        System.out.print("Номер на заявката: ");
+        System.out.print("Номер на заявка: ");
         String furloughNumber = scanner.nextLine();
+        checkNumberFromTable(furloughNumber);
 
-//        for (int index = 1; index < furloughsTable[7].length; index++) {
-//            if (furloughNumber.equals(furloughsTable[7][index])) {
-//                break;
-//            }
-//        }
-
-        System.out.print("""
-                Изберете статус (1-2)\s
-                1. Одобрена\s
-                2. Отхвърлена\s
-                Вашият избор:\s""");
+        setStatusOptions();
         String status = scanner.nextLine();
 
-        while (!status.equals("1") || status.equals("2")) {
+        while (!isStatusValid(status)) {
             printIllegalInputMessage();
             status = scanner.nextLine();
         }
 
-        if (status.equals("1")) {
-            status = "одобрена";
-        } else if (status.equals("2")) {
-            status = "отхвърлена";
-        }
-
-        int counter = 0;
-        for (int index = 1; index < furloughsTable[7].length; index++) {
-            counter++;
-            if (furloughNumber.equals(furloughsTable[7][index])) {
-                break;
-            }
-        }
-        System.out.println();
-        furloughsTable[6][counter] = status;
+        furloughsData[6][findStatusIndex(furloughNumber)] = status;
+        printSuccessfulStatusChangeMessage(switchStatusValue(status));
         exitSystem();
     }
 
-    private static void printFurloughsTableIncludingNumber() {
-        System.out.println();
+    public static String switchStatusValue(String status) {
+        if (status.equals("1")) {
+            return "одобрена";
+        } else {
+            return "отхвърлена";
+        }
+    }
+
+    public static int findStatusIndex(String furloughNumber) {
+        int index = 0;
+        for (int currentIndex = 1; currentIndex < furloughsData[7].length; currentIndex++) {
+            index++;
+            if (furloughNumber.equals(furloughsData[7][currentIndex])) {
+                break;
+            }
+        }
+        return index;
+    }
+
+    public static void printSuccessfulStatusChangeMessage(String status) {
+        System.out.println("------------------------------------------------- \n" +
+                ("Статусът на отпуската е променен на \"").concat(status).concat("\". \n") +
+                "-------------------------------------------------");
+    }
+
+    public static boolean isStatusValid(String status) {
+        return status.equals("1") || status.equals("2");
+    }
+
+    public static void setStatusOptions() {
+        printNewLine();
+        System.out.print("Изберете статус (1-2)\n" +
+                "1. Одобрена\n" +
+                "2. Отхвърлена\n" +
+                "Вашият избор: ");
+    }
+
+    public static void checkNumberFromTable(String furloughNumber) {
+        int index = -1;
+        for (int currentIndex = 0; currentIndex < furloughsData[7].length; currentIndex++) {
+            if (furloughNumber.equals(furloughsData[7][currentIndex])) {
+                break;
+            }
+            index++;
+        }
+
+        while (!searchMatchesFurloughNumber(index)) {
+            printIllegalInputMessage();
+            furloughNumber = scanner.nextLine();
+            counter = -1;
+            for (int index = 0; index < furloughsData[7].length; index++) {
+                if (furloughNumber.equals(furloughsData[7][index])) {
+                    break;
+                }
+                counter++;
+            }
+        }
+        //todo
+    }
+
+    public static boolean searchMatchesFurloughNumber(int index) {
+        return index < furloughsData[7].length - 1;
+    }
+
+    public static void printFurloughsTable() {
+        printNewLine();
         boolean loopBreaks = true;
 
-        for (int row = 0; row < furloughsTable.length; row++) {
-            for (int column = 0; column < furloughsTable.length; column++) {
-                if (furloughsTable[column][row] != null) {
-                    System.out.print(furloughsTable[column][row] + "\t \t \t");
+        for (int rowIndex = 0; rowIndex < furloughsData.length; rowIndex++) {
+            for (int columnIndex = 0; columnIndex < furloughsData.length; columnIndex++) {
+                if (isCellEmpty(columnIndex, rowIndex)) {
+                    System.out.print(furloughsData[columnIndex][rowIndex] + "\t \t \t");
                     loopBreaks = false;
                 } else {
                     loopBreaks = true;
                 }
             }
+            printNewLine();
             if (loopBreaks) {
                 break;
             }
-            System.out.println();
         }
     }
 
