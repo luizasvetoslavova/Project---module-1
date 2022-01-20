@@ -10,7 +10,6 @@ public class Furloughs {
 
     public static Scanner SCANNER = new Scanner(System.in);
     public static String[][] FURLOUGHS_DATA = new String[8][1000000];
-    public static int[] UNIQUE_NUMBERS = new int[1000000];
 
     public static void main(String[] args) throws ParseException {
         setTableHeadings();
